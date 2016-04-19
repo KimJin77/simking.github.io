@@ -1,0 +1,62 @@
+---
+layout:     post
+title:      "iOS 定位"
+date:       2016-04-06
+author:     "Anthony"
+catalog: true
+tags:
+    - Location
+---
+
+## iOS 8以后使用Core Location进行定位
+
+1. iOS 8以后再使用Core Location前需要调用下面两个方法其中之一
+
+	* 始终允许访问位置信息 `requestAlwaysAuthorization()`
+	* 使用应用程序期间允许访问位置数据 `requestWhenInUseAuthorization()`
+
+2. 在Info.plist中添加两个String类型的NSLocationAlwaysUsageDescription和NSLocationWhenInUseUsageDescription
+
+
+## CLLocationManager
+
+```swift
+let manager = CLLocationManager()
+// 始终访问位置信息
+manager.requestAlwaysAuthorization()
+// 在App使用期间访问位置信息
+// manager.requestWhenInUseAuthorization()
+manager.delegate = self
+
+manager.distanceFilter = 10.0 // 最少移动多少距离才更新一次
+manager.desiredAccuracy = kCLLocationAccuracyKilometer // 定位精度
+
+manager.startUpdatingLocation() // 开始定位
+```
+
+## 获取位置信息
+
+获取位置信息通过CLLocationManagerDelegate的协议方法来进行更新，一般会使用`locationManager(manager:didUpdateLocations:)`
+
+```swift
+func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    if let currentLocation: CLLocation = locations.last {
+      print("Current latitude: \(currentLocation.coordinate.latitude), longitude:\(currentLocation.coordinate.longitude)")
+      
+      // 解码出相关信息
+      let clGeocoder = CLGeocoder()
+      clGeocoder.reverseGeocodeLocation(currentLocation, completionHandler: { (placemarks, error) in
+        if let mark = placemarks?.first {
+          if let dic = mark.addressDictionary {
+            let city = dic["City"] as? String
+            let state = dic["State"] as? String
+            self.locationLabel.text = state! + city!
+          }
+        }
+      })
+    }
+    manager.stopUpdatingLocation()
+  }
+```
+
+	
