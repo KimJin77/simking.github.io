@@ -2,7 +2,7 @@
 layout:     post
 title:      "FFMPEG学习"
 date:       2015-04-12 12:00:00
-author:     "Anthony Jin"
+author:     "Sim"
 catalog: true
 tags:
     - FFMPEG

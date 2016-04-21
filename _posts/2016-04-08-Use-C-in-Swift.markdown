@@ -2,7 +2,7 @@
 layout:     post
 title:      "在Swift中使用C（译）"
 date:       2015-04-08
-author:     "Anthony"
+author:     "Sim"
 catalog: true
 tags:
     - C

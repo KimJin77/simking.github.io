@@ -2,7 +2,7 @@
 layout:     post
 title:      "UICollectionViewCell布局约束失效解决方法"
 date:       2016-04-06
-author:     "Anthony"
+author:     "Sim"
 catalog: true
 tags:
     - UICollectionViewCell

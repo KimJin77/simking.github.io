@@ -2,7 +2,7 @@
 layout:     post
 title:      "Xcode升级后插件失效"
 date:       2016-04-07
-author:     "Anthony"
+author:     "Sim"
 catalog: false
 tags:
     - Xcode

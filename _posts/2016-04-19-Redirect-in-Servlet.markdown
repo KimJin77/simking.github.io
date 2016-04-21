@@ -2,7 +2,7 @@
 layout:     post
 title:      "Servlet中的重定向"
 date:       2016-04-19
-author:     "Anthony"
+author:     "Sim"
 catalog: false
 tags:
     - Servlet

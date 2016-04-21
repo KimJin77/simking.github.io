@@ -2,7 +2,7 @@
 layout:     post
 title:      "iOS 定位"
 date:       2016-04-06
-author:     "Anthony"
+author:     "Sim"
 catalog: true
 tags:
     - Location
@@ -42,7 +42,7 @@ manager.startUpdatingLocation() // 开始定位
 func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
     if let currentLocation: CLLocation = locations.last {
       print("Current latitude: \(currentLocation.coordinate.latitude), longitude:\(currentLocation.coordinate.longitude)")
-      
+
       // 解码出相关信息
       let clGeocoder = CLGeocoder()
       clGeocoder.reverseGeocodeLocation(currentLocation, completionHandler: { (placemarks, error) in
@@ -58,5 +58,3 @@ func locationManager(manager: CLLocationManager, didUpdateLocations locations: [
     manager.stopUpdatingLocation()
   }
 ```
-
-	
