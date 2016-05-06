@@ -1,404 +1,372 @@
 ---
 layout:     post
-title:      "FFMPEG学习"
-date:       2015-04-12 12:00:00
+title:      "FFMPEG学习贴"
+date:       2015-05-05
 author:     "Sim"
 catalog: true
 tags:
     - FFMPEG
 ---
 
-# 基础知识
+# FFMPEG
 
-* Stream: 流。可以理解为一段时间内可接收的数据元素。比方说视频流和音频流
-* Frame: 帧。流里面的数据元素称之为帧。不同的流有不同类型的编解码器。编码器决定了数据的处理方式。
-* Packet: 包。从流中获取包。包由可以解码成原始帧的数据段组成，且最后用于App操作。
+FFMPEG是个强大的多平台通用框架，在目前我所能找到的代码中，几乎大部分都是使用FFMPEG来完成视频播放器。FFMPEG可以用于编解码，mux，demux，流数据处理，播放等功能。其包含的大类有：
 
-# 操作步骤
+  * libavutil -- 包含了简化编程的函数方法，比方说随机数生成器，数据结构，数学工具，核心媒体工具等。
+  * libavcodec -- 音频/视频的编解码工具
+  * libavformat -- 包含了demuxer和muxer的多媒体容器格式
+  * libavdevice -- 包含了用于获取/渲染的输入/输出设备的软件框架，诸如Video4Linux, Video4Linux2, VfW和ALSA
+  * libavfilter -- 媒体过滤器
+  * libswscale -- 图片优化
+  * libswresample -- 音频采样优化
 
-1）从媒体文件中打开视频流
+通常视频播放器的话，使用libavcodec, libavformat, libswscale这三个头文件的比较多。
 
-2）将从视频流中读取到的包转换为帧
+## 在iOS上使用
 
-3）如果帧数据不完整，继续步骤2
+1. 安装yasm
 
-4）处理帧数据
+  因为我的电脑已经安装了Homebrew，所以使用`brew install yasm`即可自动安装。安装完了以后，可以使用`yasm --version`来检测是否安装成功。
 
-5）回到步骤2
+2. gas-preprrocessor
 
-## 具体操作
+  在Github上下载gas-preprrocessor:[https://github.com/applexiaohao/gas-preprocessor](https://github.com/applexiaohao/gas-preprocessor)。下载完成以后，将gas-preprocessor.pl文件拷贝到/usr/sbin/目录下，修改权限为777.
 
-1. 通常需要导入下面三个FFMPEG的头文件
+3. FFmpeg-iOS-build-script
+
+  Clone，然后执行`build-ffmpeg.sh`
+
+  编译所有版本的arm64, armv7, x86_64静态库：`./build-ffmpeg.sh`
+
+  编译arm64的静态库：`./build-ffmpeg.sh arm64`
+
+  编译armv7v和x86-64的静态库：`./build-ffmpeg.sh armv7 x86_64`
+
+  编译合并的版本: `./build-ffmpeg.sh lipo`
+
+
+4. 使用编译完成的静态库
+
+  将FFmpeg-iOS引入到Xcode，添加依赖库libz.tbd, libbz2.tbd, libiconv.tbd。如果出现编译错误的话，添加如下链接路径：Build Setting - Header Search Paths = $(SRCROOT)/FFMPEGDemo/FFmpeg-iOS/include
+
+5. 最后根据项目需求添加其他依赖库，比方说:CoreAudio.framework, CoreMedia.framework, AudioToolbox.framework, VideoToolbox.framework等。
+
+## 基础概念
+
+* Stream: 流数据，即一连串可用的数据元素。举个例子来说，就是视频流和音频流。
+* Frame: 帧，流中的数据元素，不同的帧需要不同的编解码器。
+* Packet: 包，从流中获取的。包含了解码成原始帧的数据，可用于最后的处理。
+
+## 解析
+
+在我找到的demo中，比较有代表性的是[kxmovie](https://github.com/kolyvan/kxmovie)和B站的播放器[ijkplayer](https://github.com/Bilibili/ijkplayer)。因为看得比较多的是kxmovie，所以先学习下kxmovie的，B站的播放器先开个坑，等学习研究。
+
+### kxmovie
+
+#### 初始化
+
+使用FFMPEG进行编解码操作的话，基本都是以`av_register_all()`开始。
+
+`av_register_all()`用于初始化libavformat，注册所有的muxer，demuxer和其他相关的协议。通俗点讲，就是告诉系统“哎，这个文件的格式是可以打开的，它的解编码器是我们能用的”。
+
+如果流数据不是本地文件的话，你还需要加上`avformat_network_init()`.
+
+`avformat_network_init()`初始化了全局的网络组件。虽然是可选的，但是它隐式地避免了设置每个会话的开销。如果是网络文件的话，那么就是强制使用（有点废话的feel）
+
+#### 开启文件
+
+接下来就可以愉悦地打开文件了。我们看下KxMovieDecode中的`openInput:`方法：
 
 ```ObjC
-#import "libavcodec/avcodec.h"
-#import "libavformat/avformat.h"
-#import "ffmpeg/swscale.h"
-```
 
-对于iOS开发的话，需要添加下列依赖库
+- (kxMovieError) openInput: (NSString *) path
+{
+    AVFormatContext *formatCtx = NULL;
 
-* libiconv.tbd
-* libz.tbd
-* libbz2.tbd
-* CoreMedia.framework
-* AudioToolbox.framework
-* VideoToolbox.framework
+    // 1
+    if (_interruptCallback) {
 
-2. 在使用FFMPEG之前，需要事先调用`av_register_all()`方法来注册文件格式和编解码器。`av_register_all()在整个app的生命周期中只需要调用一次。
+        formatCtx = avformat_alloc_context();
+        if (!formatCtx)
+            return kxMovieErrorOpenFile;
 
+        AVIOInterruptCB cb = {interrupt_callback, (__bridge void *)(self)};
+        formatCtx->interrupt_callback = cb;
+    }
 
-3. 打开文件
+    // 2
+    if (avformat_open_input(&formatCtx, [path cStringUsingEncoding: NSUTF8StringEncoding], NULL, NULL) < 0) {
 
-```ObjC
-AVFormatContext *pFormatCtx;
+        if (formatCtx)
+            avformat_free_context(formatCtx);
+        return kxMovieErrorOpenFile;
+    }
 
-// Open video file
-if (avformat_open_input(&pFormatCtx, [path UTF8String], NULL, NULL) != 0) {
-	NSLog(@"Couldn't open file);
+    // 3
+    if (avformat_find_stream_info(formatCtx, NULL) < 0) {
+
+        avformat_close_input(&formatCtx);
+        return kxMovieErrorStreamInfoNotFound;
+    }
+
+    // 4
+    av_dump_format(formatCtx, 0, [path.lastPathComponent cStringUsingEncoding: NSUTF8StringEncoding], false);
+
+    _formatCtx = formatCtx;
+    return kxMovieErrorNone;
 }
+
 ```
 
-该方法将文件头和相关信息存储在`AVFormatContext`结构的对象中。最后的三个参数分别用于指定文件格式，缓存大小和格式选项，可以设置为`NULL`或者0，因为libavformat会自动检查这三个参数的值。
+这段代码中，有个问题需要注意下。我试过在另外的Project中打下同样的代码，可是一执行到代码段1中就会crash，始终找不到原因。在stackflow上看到一个答案说是在执行`avformat_open_input()`的时候要确保传入的formatCtx为NULL。当我注释掉代码段1的时候，就发现能顺利编译运行过去了。。而kxmovie中的就算不注释，也能顺利运行。。真是无解。。不知道是不是使用的ffmpeg版本不同的原因。。。。。至今不明白。
 
-4. 获取流信息, 在`pFormatCtx->steams`中填入合适的信息。
+`formatCtx`可以初始化为NULL，也可以如代码段1中那样调用`avformat_alloc_context()`方法进行初始化。（好像差别不大）。
+
+比较重要的是`avformat_open_input()`方法。调用这个方法来开启输入流及读取头文件，但是并没有开启解编码器哦~`avformat_open_input()`接受4个参数：第一个是指向`AVFormatContext`的指针，第二个是文件的路径，需要使用UTF8编码，最后两个参数是文件格式和缓存大小等可设置的参数，基本都是传入`NULL`或者是0。因为libavformat会自动填充这些相关的信息。
+
+#### 获取Stream
+
+成功打开文件后，可以读取文件的流数据信息。
+
+使用`avformat_find_stream_info()`方法来获取流信息，也就是给`formatCtx->streams`赋值。当返回值大于0的话，表明获取信息成功。则此时`formatCtx->streams`是一个size为`formatCtx->nb_streams`的数组，里面存的都是流数据的指针。
+
+代码段4好像是我自己调试的时候加上的，主要就是用`av_dump_format()`方法来debug调试。
+
+这段代码完成之后，我们就能获取到媒体文件的流数据。接下来的步骤就是进行流数据的处理了。
+
+首先我们要获取流数据，通过遍历`formatCtx->streams`数组来获取视频/音频/字幕(subtitle在这里应该字幕吧)的index
 
 ```ObjC
-if (avformat_find_stream_info(pFormatCtx, NULL) < 0 ) {
-	NSLog(@"Couldn't find stream information");
-}
-```
+// 这里只写videoStream
 
-可以通过下面的debug函数来获取信息
-
-```ObjC
-av_dump_format(pFormatCtx, 0, [path.lastPathComponent UTF8String], false);
-```
-
-5. 遍历`pFormatCtx->streams`来获取视频流
-
-```ObjC
-int videoStream = -1;
-
-for (int i = 0; i < pFormatCtx->nb_streams;i++) {
-	// 音频流的话,codec_type为AVMEDIA_TYPE_AUDIO
-	if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
-		videoStream = i;
-		break;
-	}
+// 初始化为-1
+NSInteger videoStream = -1;
+for (NSInteger i = 0; i < formatCtx->nb_streams; i++) {
+  if (formatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+    videoStream = i;
+    ...
+  }
 }
 
 if (videoStream == -1) {
-	NSLog(@"Didn't find a video stream");
-	return;
+  return -1; // 没有找到视频流信息
 }
 
-// 获取视频流的编解码器的上下文的指针
-pCodecCtx = pFormatCtx->streams[videoStream]->codec;
+// 音频的编解码器类型则是AVMEDIA_TYPE_AUDIO, 字幕是AVMEDIA_TYPE_SUBTITLE
 ```
 
-流信息中，关于编解码器的信息我们称之为"编解码器上下文".里面包含了流所使用的编解码器的所有信息。虽然如此，但是我们仍然需要找到编解码器并打开之
+#### 获取并打开解码器
 
-6. 获取编解码器
+流信息中关于编解码器的部分可以称为编解码器的上下文，里面包含了流所使用的编解码器的所有信息。接下来需要找到并打开编解码器。
 
 ```ObjC
-AVCodec *pCodec;
-
-// Find the decoder
-pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
-if (pCodec == NULL) {
-	NSLog(@"Unsupported codec");
-	return;
+// 获取编解码器上下文指针
+AVCodecContext *codecCtx = _formatCtx->streams[videoStream]->codec;
+// 找到解码器
+AVCodec *codec = avcodec_find_decoder(codecCtx->codec_id);
+if (codec == NULL) {
+  NSLog("Unsupported codec!");
 }
-
-// Copy
-pCodecCtx = avcodec_alloc_context3(pCodec);
-if (avcodec_copy_context(pCodecCtx, pCodecCtxOrig) != 0) {
-	NSLog(@"Couldn't copy codec context");
-	return;
-}
-
-// Open
-if (avcodec_open2(pCodecCtx, pCodec) < 0) {
-	NSLog(@"Couldn't open codec);
-	return;
+// 打开解码器
+if (avcodec_open2(codecCtx, codec, NULL) < 0) {
+  NSLog(@"Could not open codec.");
 }
 ```
 
-**Note** 不能直接使用视频流的AVCodecContext！所以使用`avcodec_copy_context()`来复制一份。
+#### FPS
 
-7. 存储数据
+---
+下面需要了解的是FFMPEG中的时间概念。
 
-在内存中存储帧数据
+FFMPEG中大多数结构都有`time_base`的成员变量存在，比方说`AVStream`和`AVCodecContext`。`time_base`的结构如下:
 
-```ObjC
-AVFrame *pFrame;
+```c
+typedef struct AVRational {
+  int num;
+  int den;
+} AVRational;
 
-// Allocate
-pFrame = av_frame_alloc();
+// AVRational是一个分数，其中num为分子，den为分母
 ```
 
-假设我们想要输出以24位RGB保存数据的PPM文件，我们需要将帧从原始的数据转化为RGB。FFMPEG能帮我们完成这个功能滴。如：
+`time_base`的单位是秒。
+
+在FFMPEG中还有几个跟时间有关的概念
+
+* fps(帧率) = st->avg_frame_rate
+
+  `AVStream::avg_frame_rate` -- 平均帧率，在demuxing中，可能会在创建流数据时由libavformat或者在`avformat_find_stream_info()`中被赋值。
+
+
+* tbr(AVStream中的time base) = st->r_frame_rate
+
+  `AVStream::r_frame_rate` -- 流的真正帧速率。这是最底层帧速率，所有的时间戳都能使用其进行准确计算得出。但是！这个只是一个猜测值来的！！举个栗子，如果time base是1/90000,且所有的帧近似都是3600或者1800的计时器刻度的话，则`r_frame_rate`的值为50/1
+
+* tbn(用于特殊要求的AVCodecContext的time base) = st->time_base
+
+  `AVStream::time_base` -- 基本的时间单位（单位为秒），表示帧的时间戳。解码时由libavformat进行设置，编码时调用avformat_write_header()进行设置
+
+* tbc(视频帧率) = st->codec->time_base
+
+  `AVCodecContext::time_base` -- 基本时间单位（单位为秒），对于fixed-fps的文件而言，timebase应该是1/帧率并且时间戳的增量应该是1。tbr的精度要大于tbc
+
+---
+
+在kxmovie中，fps和timebase相关的代码段如下：
 
 ```ObjC
-// Allocate an AVFrame structure
-pFrameRGB = av_frame_alloc();
-if (pFrameRGB == NULL) return;
+// av_q2d()函数用于把有理数转化成double类型的数
+
+static void avStreamFPSTimeBase(AVStream *st, CGFloat defaultTimeBase, CGFloat *pFPS, CGFloat *pTimeBase)
+{
+    CGFloat fps, timebase;
+
+    if (st->time_base.den && st->time_base.num)
+        timebase = av_q2d(st->time_base);
+    else if(st->codec->time_base.den && st->codec->time_base.num)
+        timebase = av_q2d(st->codec->time_base);
+    else
+        timebase = defaultTimeBase;
+
+    if (st->codec->ticks_per_frame != 1) {
+        LoggerStream(0, @"WARNING: st.codec.ticks_per_frame=%d", st->codec->ticks_per_frame);
+        //timebase *= st->codec->ticks_per_frame;
+    }
+
+    if (st->avg_frame_rate.den && st->avg_frame_rate.num)
+        fps = av_q2d(st->avg_frame_rate);
+    else if (st->r_frame_rate.den && st->r_frame_rate.num)
+        fps = av_q2d(st->r_frame_rate);
+    else
+        fps = 1.0 / timebase;
+
+    if (pFPS)
+        *pFPS = fps;
+    if (pTimeBase)
+        *pTimeBase = timebase;
+}
 ```
 
-分配内存后，在我们转换数据的时候，需要存储原始数据的地方。我们可以使用`avpicture_get_size`来获取大小并且分配空间
+我们可以看到，timebase是先从检测tbn的值，如果tbn为非0的话，则使用tbn作为timebase，为0就判断tbc，tbc为0就使用默认的timebase。fps也差不多，先判断fps，再判断tbr。
 
+基本上，准备步骤就到了这里就完成了。接下来的步骤就是根据自己的需求灵活使用，FFMPEG的就这么完了？（这么坑）。从kxmovie中看到的，有下面这些
+
+#### 视频帧格式
+
+kxmovie中自定义了两种视频帧的格式：KxVideoFrameFormatYUV和KxVideoFrameFormatRGB。一般情况下，视频帧的格式也就这两种了。。我们可以通过`videoCodecCtx->pix_fmt`来获取视频帧的具体格式，对于YUV来说，其值可能是`AV_PIX_FMT_YUV420P`或者是`AV_PIX_FMT_YUVJ420P`(也有可能是其他YUV类型，kxmovie中只对这两种类型进行了判断)。
+
+#### 解码（关键步骤来了）
+
+首先判断所有帧是否已经读取完成，使用`av_read_frame()`。如果已经到了最后一帧的话，该函数会返回小于0的值
 ```ObjC
-uint8_t *buffer = NULL;
-int numBytes;
-// 获取所需要的内存缓存大小并分配空间
-numBytes = avpicture_get_size(PIX_FMT_RGB24, pCodecCtx->width, pCodexCtx->height);
-buffer = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
-
-avpicture_fill((AVPicture *)pFrameRGB, buffer, PIX_FMT_RGB24, pCodecCtx->width, pCodecCtx->height);
-```
-
-9. 读取数据
-
-通过读取包来获取整个完整的视频流，然后进行解码，一旦完成所需要的帧数据的读取，就可以进行转换并保存了。
-
-```ObjC
-struct SwsContext *sws_ctx;
-int frameFinished;
 AVPacket packet;
+while(av_read_frame(formatCtx, &packet) >= 0) {
+  int gotFrame = 0;
+  if (packet.stream_index == videoStream) {
+    avcodec_decode_video2(codexCtx, frame, &gotFrame, &packet);
+  }
 
-// 初始化SWS上下文
-sws_ctx = sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt,pCodecCtx->width, pCodecCtx->height, PIX_FMT_RGB24, SWS_BILINEAR, NULL,NULL, NULL);
-
-while(av_read_frame(pFormatCtx, &packet) >= 0) {
-	// 判断是否来自视频流
-	if (packet.stream_index == videoStream) {
-		// 解码
-		avcodec_decode_video2(pCodeCtx, pFrame, &frameFinished, &packet);
-	}
-
-	// 是否获取到视频帧
-	if (frameFinished) {
-		// 转换为RGB
-		sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data, pFrame->linesize, 0, pCodecCtx->height, pFrameRGB->data, pFrameRGB->linesize);
-
-		// 保存
-		if (++i <= 5) {
-			SaveFrame(pFrameRGB, pCodecCtx->width, pCodecCtx->height, i);
-		}
-	}
-
-	// 释放
-	av_free_packet(&packet)
-}
-```
-
-首先，使用`av_read_frame()`读取包，并保存到`AVPacket`结构中。我们只需要分配包结构的空间，FFMPEG会自行分配内部的数据结构。最后使用`av_free_packet()`释放。`avcodec_decode_video()`负责将包转换成帧。但是，因为我们不知道解码所需要的全部的数据，所以在有下一帧数据的时候通过`avcodec_decode_video()`来设置frameFinished。使用`sws_scale()`来转换数据.
-
-保存的方法
-
-```ObjC
-FILE *pFile;
-NSString *fileName;
-int y;
-
-NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
-fileName = [documentsDirectory stringByAppendingPathComponent:fileName];
-
-// Open file
-pFile = fOpen([fileName UTF8String], "wb");
-if (pFile == NULL) return;
-
-// write header
-fprintf(fFile, "P6\n%d %d\n255\n", width, height);
-
-// write pixel data
-for (y = 0; y < height; y++) {
-	fwrite(pFrame->data[0]+y*pFrame->linesize[0], 1, width*3, pFile);
+  // 如果gotFrame为非0，则表明读取到了视频帧， 此时在kxmovie中，会根据视频帧的格式进行数据处理
+  if (gotFrame) {
+    [self handleVideoFrame];
+  }
 }
 
-// close file
-fclose(pFile);
+- (KxVideoFrame *) handleVideoFrame
+{
+    if (!_videoFrame->data[0])
+        return nil;
+
+    KxVideoFrame *frame;
+
+    if (_videoFrameFormat == KxVideoFrameFormatYUV) {
+
+        KxVideoFrameYUV * yuvFrame = [[KxVideoFrameYUV alloc] init];
+        // 将读取到的数据分成Y、U、V分量
+        yuvFrame.luma = copyFrameData(_videoFrame->data[0],
+                                      _videoFrame->linesize[0],
+                                      _videoCodecCtx->width,
+                                      _videoCodecCtx->height);
+
+        yuvFrame.chromaB = copyFrameData(_videoFrame->data[1],
+                                         _videoFrame->linesize[1],
+                                         _videoCodecCtx->width / 2,
+                                         _videoCodecCtx->height / 2);
+
+        yuvFrame.chromaR = copyFrameData(_videoFrame->data[2],
+                                         _videoFrame->linesize[2],
+                                         _videoCodecCtx->width / 2,
+                                         _videoCodecCtx->height / 2);
+
+        frame = yuvFrame;
+
+    } else {
+    // RGB格式的话
+        if (!_swsContext &&
+            ![self setupScaler]) {
+
+            LoggerVideo(0, @"fail setup video scaler");
+            return nil;
+        }
+
+        sws_scale(_swsContext,
+                  (const uint8_t **)_videoFrame->data,
+                  _videoFrame->linesize,
+                  0,
+                  _videoCodecCtx->height,
+                  _picture.data,
+                  _picture.linesize);
+
+
+        KxVideoFrameRGB *rgbFrame = [[KxVideoFrameRGB alloc] init];
+
+        rgbFrame.linesize = _picture.linesize[0];
+        rgbFrame.rgb = [NSData dataWithBytes:_picture.data[0]
+                                    length:rgbFrame.linesize * _videoCodecCtx->height];
+        frame = rgbFrame;
+    }    
+
+    frame.width = _videoCodecCtx->width;
+    frame.height = _videoCodecCtx->height;
+    frame.position = av_frame_get_best_effort_timestamp(_videoFrame) * _videoTimeBase;
+
+    const int64_t frameDuration = av_frame_get_pkt_duration(_videoFrame);
+    if (frameDuration) {
+
+        frame.duration = frameDuration * _videoTimeBase;
+        frame.duration += _videoFrame->repeat_pict * _videoTimeBase * 0.5;
+
+    } else {
+
+        // sometimes, ffmpeg unable to determine a frame duration
+        // as example yuvj420p stream from web camera
+        frame.duration = 1.0 / _fps;
+    }    
+    return frame;
+}
+
 ```
+## 总结
 
-10. 释放
+完成上述步骤后，就可以利用OpenGL等进行渲染绘制了。
 
-```ObjC
-av_free(buffer);
-av_free(pFrameRGB);
+综上所述，利用FFMPEG进行流媒体文件的处理的话，有以下步骤
 
-av_free(pFrame);
-
-avcodec_close(pCodecCtx);
-avcodec_close(pCodecCtxOrig);
-
-avformat_close_input(&pFormatCtx);
-```
-
-# 在屏幕上播放
-
-iOS好像使用OpenGL比较多，有待研究。FFMPEG的教程中使用的是SDL。
-
-# 播放声音
-
-iOS上使用AudioStreamer
-
-<!--
-# 视频同步
-
-## PTS和DTS
-
-在声音和视频都能正常播放之后，就该考虑如何同步播放。不然就是各播各的了。音频流和视频流里面都包含有播放速率等相关信息。音频流有采样率，视频流有帧率。但是，视频和音频同步并不是简单的数帧数和采样帧率就能够完成的。流数据中的包里面，有两个属性，分别是解码时间标记(Decoding time stamp -- DTS)和播出时间标记(presentation time stamp -- PTS).要理解这两者的话，需要知道媒体文件的存储方式。比方说MPEG，使用的是"B"帧(B代表的是bidirectional,双向的)。另外的I和P代表的是帧内(Intra)和预测(Predicted).I帧包含了完整的图片，P帧取决于先前的I帧和P帧，并且不同之处在于增量方面。B帧和P帧差不多，但是取决于某帧画面之前或之后的信息。
-
-假设我们有个电影文件，每帧画面是I B B P。我们需要在播放每个B帧之前知晓P中的信息。由于这个原因，所以这个文件的帧可能按I P B B的顺序进行存储。这就是为什么我们要在每帧画面上用上DTS和PTS。DTS告诉我们什么时候进行解码，PTS则会告诉我们什么时候可以开始播放。所以，我们的帧看起来是这样的
+  1. 初始化libavformat库，初始化网络组件（可选）
+  2. 打开媒体流文件 -- `avformat_open_input()`
+  3. 获取流信息 -- `avformat_find_stream_info()`
+  4. 遍历`formatCtx->streams`,根据编解码器类型判断流的类型 -- `formatCtx->stream[i]->codec->codec_type`
+  5. 获取编解码器上下文指针 -- `AVCodecContext *codecCtx = formatCtx->streams[videoStream]->codec`
+  6. 获取编解码器 -- `AVCodec *codec = avcodec_find_decoder(codecCtx->codec_id)`
+  7. 打开编解码器 -- `avcodec_open2()`
+  8. 设置fps和timebase
+  9. 读取视频帧 -- `av_read_frame`
+  10. 解码 -- `avcodec_decode_video2()`
 
 ---
-	PTS: 1 4 2 3
-	DTS: 1 2 3 4
-Stream: I P B B
----
+相关链接:
 
-通常情况下，PTS和DTS只会在播放B帧的时候出现不同。
-
-当我们从`av_read_frame()`中获取包时，将会得到包中的PTS和DTS的值。但是真正需要的是我们最新解码出来的帧的PTS，因为我们需要知道什么时候能够进行播放。FFMPEG提供了`av_frame_get_best_effort_timestamp()`函数
-
-## 同步
-
-在播放一帧画面后，我们需要知道下一帧画面的播出时间。所以我们可以简单地设置一个计时器来刷新视频画面。如果是这样的话，就要对比下一帧的PTS和系统时间来确定计时器的设置时长。同时还要考虑下面两点：
-
-首先是知道下一帧的PTS的时间。虽然我们知道可以将当前的视频速率添加到当前的PTS上，但是有些视频是需要重复帧画面来完成的。也就是说，我们可以在一段时间里面重复播放当前的画面。这可能会引起下一帧画面的过快出现。
-
-我们可能不会过于关心是不是每帧画面和声音都能完美同步。因为不是每个媒体文件都是无缺陷的，所以我们可以将音频同步到视频，将视频同步到音频，甚至是将这两者同步到一个外部时钟（比方说你的电脑）.
-
-## 获取某帧画面的PTS
-
-使用`avcodec_decode_video2`
-
-```ObjC
-double pts;
-
-for (;;) {
-	...
-
-	pts = 0;
-	// 解码
-	len1 = avcodec_decode_video2(videoCodecCtx, videoFrame, &frameFinished, packet);
-
-	if (packet->dts != AV_NOPTS_VALUE) {
-		pts = av_frame_get_best_effort_timestamp(pFrame);
-	} else {
-		pts = 0;
-	}
-
-	pts *= av_q2d(fFormatCtx->stream[videoStream]->time_base);
-}
-```
-
-## 同步，使用PTS
-
-（下面的代码使用C，我还没在App中用过，所以照搬教程）
-
-```C
-typedef struct VideoState {
-	double video_clock; // 最后解码帧画面的pts/下一帧解码的pts
-```
-
-```C
-double synnchronize_video(VideoState *is, AVFrame *src_frame, double pts) {
-	double frame_delay;
-
-	if (pts != 0) {
-		// 如果pts不为0，设置为video_clock
-		is->video_clock = pts;
-	} else {
-		// 如果没获取到pts，就将其设置为clock
-		pts = is->video_clock;
-	}
-
-	// 更新clock
-	frame_delay = av_q2d(is->video_st->codec->time_base);
-	// 如果画面重复，则根据clock进行调整
-	frame_delay += src_frame->repeat_pict * (frame_delay * 0.5);
-	is->video_clock += frame_delay;
-	return pts;
-}
-```
-
-使用queue_picture来使用PTS，将帧添加进队列
-
-```C
-if (frameFinished) {
-	pts = synchronize_video(is, Frame, pts);
-	if (queue_picture(is, pFrame, pts) < 0) {
-		break;
-	}
-}
-```
-
-我们通过简单的计算前一个pts和当前这个pts的时间来获取下一个pts。与此同时，我们需要将视频同步到音频上面去。创建一个音频时钟，用于追踪当前音频播放的位置。
-
-现在先假设我们有个`get_audio_clock`函数可以获取音频时钟的时间。不过，在视频和音频没同步的时候，我们应该怎么使用这个值呢？我们可以使用计算下一次刷新的时间来调整这个时间值。如果PTS相比音频时间较后的话，我们可加大延迟时间。如果太过超前，则可以加快刷新频率。无论是延迟还是加快，我们都需要通过`frame_timer`来计算。这个帧计时器会在播放影片的时候统计所有的延迟时间。换句话说，`frame_timer`就是下一帧画面要播出的时间。
-
-```ObjC
-void video_refresh_timer(void *userdata) {
-	VideoState *is = (VideoState *)userdata;
-	VideoPicture *vp;
-	double actual_delay, delay, sync_threshold, ref_clock, diff;
-
-	if (is->video_st) {
-		if (is->pictq_size == 0) {
-			schedule_refresh(is, 1);
-		} else {
-			vp = &is->pictq[is->pictq_rindex];
-
-			delay = vp->pts - is->frame_last_pts; // 最后时间的pts
-			if (delay <= 0 || delay >= 1.0) {
-				// 延迟的时间不对的话，使用前一个
-				delay = is->frame_last_delay;
-			}
-
-			// 保存
-			is->frame_last_delay = delay;
-			is->frame_last_pts = vp->pts;
-
-			// 更新
-			ref_clock = get_audio_clock(is);
-			diff = vp->pts - ref_clock;
-
-			// 跳过或者重复某帧画面
-			sync_threshold = (delay > AV_SYNC_THRESHOLD) ? delay: AV_SYNC_THRESHOLD;
-			if (fabs(diff) < AV_NOSYNC_THRESHOLD) {
-				if (diff <= -sync_threshold) {
-					delay = 0;
-				} else if (diff >= sync_threshold) {
-					delay = 2 * delay;
-				}
-			}
-			is->frame_timer += delay;
-			// 计算实际延迟
-			actual_delay = is->frame_timer - (av_gettime() / 1000000.0);
-			if (actual_delay < 0.010) {
-				actual_delay = 0.010;
-			}
-
-			schedule_refresh(is, (int)(actual_delay * 1000 + 0.5));
-			video_display(is);
-
-			// 更新队列
-			if (++is->pictq_rindex == VIDEO_PICTURE_QUEUE_SIZE) {
-				is->pictq_rindex = 0;
-			}
-			SDL_LockMutex(is->pictq_mutex);
-			is->pictq_size--;
-			SDL_CondSignal(is->pictq_cond);
-			SDL_UnlockMutex(is->pictq_mutex);
-		}
-	} else {
-		schedule_refresh(is, 100);
-	}
-}
-```
--->
-
----
-相关链接:[An ffmpeg and SDL Tutorial](http://dranger.com/ffmpeg/tutorial01.html)
+1. [An ffmpeg and SDL Tutorial](http://dranger.com/ffmpeg/tutorial01.html)
+2. [time-base in FFMPEG](https://gist.github.com/yohhoy/50ea5fe868a2b3695e19)
+3. [kxmovie](https://github.com/kolyvan/kxmovie)
+4. [YUV](https://en.wikipedia.org/wiki/YUV)

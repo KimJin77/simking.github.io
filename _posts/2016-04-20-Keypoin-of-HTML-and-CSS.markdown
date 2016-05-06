@@ -79,3 +79,20 @@ e.g
   animation: myAnimation 2s ease infinite;
 }
 ```
+
+13. `margin`指的是控件边缘相对父控件的边距，即自身边框到另一个容器边框之间的距离（容器外距离）。`padding`指的是控件内容相对控件边缘的距离，即自身边框到自身内部另一个容器边框的距离（容器内距离）。
+
+14. css中`background`设置时，`background-size`不能在简写形式中赋值。另外，`background-size`有四种类型的值，分别是:
+
+  * length: 设置背景图像的宽高。如果只设置一个值得话，另外一个的值是auto
+  * percentage: 以父元素的百分比来设置背景图像的宽高。如果只设置一个值得话，另外一个的值是auto
+  * cover: 把背景图像设置至足够大，以使其能够完全覆盖背景区域。
+  * contain: 使宽高适应内容区域。
+
+15. jQuery的尺寸方法
+
+  * width()和height(): 设置或返回元素的宽高（不包含内边距，外边距或边框）
+  * innerWidth()和innerHeight(): 返回元素的宽高（包括内边距）
+  * outerWidth()和outerHeight(): 返回元素的宽高（包括内边距和边框）
+
+16. css的绝对定位是“相对于”最近的已定位的祖先元素，而相对定位是“相对于”元素在文档中初始位置。
