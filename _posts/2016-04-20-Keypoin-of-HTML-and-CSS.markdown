@@ -9,6 +9,53 @@ tags:
     - CSS
 ---
 
+## Update in 2016-05-10
+
+1. 在表单中，如果在表单提交时不允许某个数据为空，则可以在`input`标签中添加`required`字段，表明该值不能为空
+
+e.g
+
+```html
+<input type="text" required>...</input>
+```
+
+需要注意的是，`required`是HTML5添加的属性，在Safari中并不会生效
+
+2. CSS属性修改的优先级：`!important` > 内部style声明 > id > class
+
+3. Bootstrap
+
+  * 图片适应屏幕： `img-responsive`
+  * 文字居中：`text-center`
+  * 创建Bootstrap按钮：`class="btn"`
+  * 创建block的按钮：`class="btn btn-block"`
+
+---
+
+## Update in 2016-05-09
+
+1. 浮动导致的布局变动
+
+  * 对于块级元素来说，在不设置宽度的情况下，默认宽度是100%，一旦设置了浮动，它的宽度就会根据内容进行自动调整。
+  * 设置了浮动的元素会脱离正常的文档流。譬如：默认情况下，父元素的高度会根据子元素的内容自动进行调整，而如果我们将子元素设置为浮动，父元素的高度就会变成0
+  * 浮动的元素虽然脱离了文档流，但是里面的内容仍然会占据空间，会根据相对位置进行布局
+
+2. CSS中的position（元素的定位属性），有5个可选值: static（默认值）、relative、absolute、fixed、inherit。其中static和relative用于相对定位。absolute和fixed属于绝对定位的范畴。
+
+absolute是相对上一个**不为static的父元素**进行绝对定位。fixed则是相对于浏览器窗口进行定位。
+
+3. 实际项目中，标签选择器一般用于定义全局样式
+
+4. 使用个性化字体的话，使用`@font-face`，它可以加载服务器端的字体文件。基本语法如下
+
+```CSS
+@font-face {
+  font-family: myFirstFont;
+  src: url('Sansation_light.ttf');
+}
+```
+
+---
 1. 在新窗口打开链接
 
 ```html
@@ -33,6 +80,7 @@ box-height = margin-top + border-top + padding-top + height + margin-bottom + bo
   * Mozilla Firefox: -moz-
   * Microsoft Internet Explorer: -ms-
   * Webkit(Google Chrome and Apple Safari): -webkit-
+  * Opera: -o-
 
 7. Box Sizing的常见值:
 
