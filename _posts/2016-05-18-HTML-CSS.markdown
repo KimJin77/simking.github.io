@@ -1,0 +1,129 @@
+---
+layout:     post
+title:      "HTML & CSS要点"
+date:       2016-05-18
+author:     "Sim"
+catalog: true
+tags:
+    - CSS
+    - HTML
+---
+
+#HTML
+
+1. HTML和XHTML文档类型定义
+
+  1) HTML 4.01 Strict DTD:`<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">`
+
+  2) HTML 4.01 Transitional DTD:`<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">`
+
+  3) HTML 4.01 Frameset DTD:`<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/frameset.dtd">`
+
+  4) XHTML 1.0 Strict DTD:`<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xtml1/DTD/xhtml1-strict.dtd">`
+
+  5) XHTML 1.0 Transitional DTD:`<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xtml1/DTD/xhtml1-transitional.dtd">`
+
+  6) XHTML 1.0 Frameset DTD:`<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xtml1/DTD/xhtml1-frameset.dtd">`
+
+  7) XHTML 1.1 DTD:`<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xtml11/DTD/xhtml11.dtd">`
+
+-----
+
+#CSS
+
+1. CSS 盒模型包含
+
+  * 内容(content) -- 处于盒的中央
+  * 内边距(padding) -- 紧贴内容的区域
+  * 边框(border) -- 包围内边距的外层，构成盒的边界
+  * 外边距(margin) -- 从边框边界开始向外延伸的**透明**盒
+
+
+默认的外边距值是0，这时与边框边界对齐。如果边框值为0，则边框与内边距对齐
+
+所以，内边距为0时，内边距将紧贴内容，值大于0时，会撑大盒子
+
+
+2. 使用`@media`在同一样式表中指定不同的媒体类型
+
+e.g
+
+```css
+/* 一般情况 */
+p {
+  font-size: 13px;
+}
+
+/* 需要进行打印时 */
+@media print {
+  p {
+    font-size: 10px;
+  }
+}
+```
+
+3. font的简写属性中，如果需要同时使用`font-size`和`line-height`的话，可以用'/'进行分割
+
+4. 1em = 10px
+
+5. 将文本设置为左右对齐式
+
+```CSS
+p {
+  width: 600px;
+  text-align: justify;
+}
+```
+
+6. 居中显示
+
+  1）表格
+
+  ```html
+  <div class="center">
+    <table width=50% border="1" cellpadding="30">
+      <tr>
+        <td>This is the first cell</td>
+        <td>This is the second cell</td>
+      </tr>
+    </table>
+  </div>
+  ```
+
+  ```CSS
+  .center {
+    text-align: center;
+  }
+  .center table {
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+  }
+  ```
+
+  2） 图片
+
+  ```html
+  <div class="flagicon"><img src="flag.gif" alt="Flag" width="160" height="100"></div>
+  ```
+
+  ```CSS
+  .flagicon {
+    text-align: center;
+  }
+  ```
+
+  如果是显示定宽元素的话，首先可以把父元素的`padding-left`设置为50%，然后取需要居中元素的宽度值的一半，将该值取负给margin-left
+
+  ```html
+  <img src="img.jpg" width="256" height="192">
+  ```
+
+  ```css
+  body { padding-left: 50%; }
+  img { margin-left: -138px; }
+
+  /* 也可以这样 */
+  img { display: block; margin: 0 auto; }
+  ```

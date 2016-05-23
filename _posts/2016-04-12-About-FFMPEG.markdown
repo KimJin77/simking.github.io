@@ -108,7 +108,7 @@ FFMPEG是个强大的多平台通用框架，在目前我所能找到的代码�
         avformat_close_input(&formatCtx);
         return kxMovieErrorStreamInfoNotFound;
     }
-
+,
     // 4
     av_dump_format(formatCtx, 0, [path.lastPathComponent cStringUsingEncoding: NSUTF8StringEncoding], false);
 

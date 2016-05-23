@@ -357,7 +357,7 @@ float aspect = fabs(self.view.bounds.size.width / self.view.bounds.size.height);
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
 
 //  glViewport(0, 0, 100, 100);
-  
+
   glUniformMatrix4fv(uniforms[UNIFORM_MODELVIEWPROJECTION_MATRIX], 1, 0, _modelViewProjectionMatrix.m);
 
   glClearColor(0.2f, 0.5f, 0.3f, 1.0f);
