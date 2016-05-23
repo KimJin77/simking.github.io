@@ -54,9 +54,13 @@ git config --global user.email "<youremail@example.com">
 17. 合并：
 
   1) 切换到想合并进去的分支: `git checkout gh-pages`
+
   2) 合并哪个分支: `git merge <BRANCHNAME>`
+
   3) 删除已合并的分支: `git branch -d <BRANCHNAME>`
+
   4) 从原程序中pull：`git pull upstream gh-pages`
+  
 ---
 
 # 参考链接
