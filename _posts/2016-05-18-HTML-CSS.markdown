@@ -127,3 +127,30 @@ p {
   /* 也可以这样 */
   img { display: block; margin: 0 auto; }
   ```
+
+7. 在所有浏览器上是列表左侧保持一致
+
+  ```css
+  ul {
+    margin-left: 40px;
+    padding-left: 0px;
+  }
+  ```
+
+8. 在列表项之间添加列表分隔符
+
+  ```css
+  li { border-top: 1px solid black; }
+  ul { border-bottom: 1px solid black; }
+  ```
+9. 自定义列表文本标记符
+
+  ```css
+  ul { list-sytle: none; }
+  li:before { content: "XX"; }
+
+  /* 如果是图片的话， 可以这样做 */
+  ul { list-style-type: disc; list-sytle-image: none; }
+  ```
+
+10. 超链接伪类优先级： link > visited > hover > active
