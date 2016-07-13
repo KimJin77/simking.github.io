@@ -1,0 +1,132 @@
+---
+layout:     post
+title:      "Servlet复习"
+date:       2016-07-12
+author:     "Sim"
+catalog: false
+tags:
+    - Java
+    - Servlet
+---
+
+1. Servlet命名以XxxServlet。
+2. DAO类表示接口以及接口的实现类，命名方式为XxxDao。
+3. Servlet的'init()'方法只会在第一次创建Servlet时被调用。当用户调用一个Servlet时，就会创建一个Servlet实例，每一个用户请求都会产生一个新的线程，在适当的时候移交给'doGet()'或者'doPost()'。
+4. web.xml文件编写说明
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" id="WebApp_ID" version="3.0">
+	<display-name>example</display-name>
+
+	<servlet>
+	  	<servlet-name>key</servlet-name>
+	  	<servlet-class>com.example.web.KeyServlet</servlet-class>
+	  	<load-on-startup>1</load-on-startup>
+	  </servlet>
+	  
+	  <servlet-mapping>
+	  	<servlet-name>key</servlet-name>
+	  	<url-pattern>/key</url-pattern>
+	  </servlet-mapping>
+	
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+	</welcome-file-list>
+</web-app>
+```
+
+
+1) '<servlet-name>'是给servlet起的名字，展示给tomcat看
+2）'<servlet-class>'对应编译后的类名
+3）'<url-pattern>'表示Client访问时使用的字段
+
+5. 利用session来保存同一个用户的信息
+
+```java
+HttpSession session = request.getSession(true); // 如果不存在session的话，就创建一个
+session.setAttribute(AttributeName, attributeValue); // 设置attribute
+session.getAttribute(AttributeName_01); // 获取attribute
+```
+
+6. 重定向
+
+```java
+response.setStatus(response.SC_MOVED_TEMPORARILY);
+response.setHeader("Location", redirect_url);
+
+// Or
+response.sendRedirect(redirect_url);
+```
+
+7. 编译war包： 创建build.xml后build即可。build.xml文件demo如下：
+
+```xml
+<?xml version="1.0"?>
+
+<project name="name" default="make-war" basedir=".">
+
+	<property name="war.name" value="name.war" />
+	<property name="web.dir" value="${basedir}/WebContent" />
+	<property name="class.dir" value="${basedir}/build/classes" />
+	<property name="war.dest" value="${basedir}/dist/${war.name}" />
+	<property name="src.dir" value="${basedir}/src" />
+
+	<target name="clean">
+		<delete dir="${class.dir}" />
+		<mkdir dir="${class.dir}" />
+	</target>
+
+	<path id="project.lib">
+		<fileset dir="${basedir}/WebContent/WEB-INF/lib">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="${basedir}/ex.lib">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<target name="compile" depends="clean">
+		<javac srcdir="src" destdir="${class.dir}" source="1.6" deprecation="true" debug="true" >
+			<classpath refid="project.lib">
+			</classpath>
+		</javac>
+		<copy todir="${class.dir}">
+			<fileset dir="${src.dir}" >
+				<include name="**/**.*" />
+				<exclude name="**/*.class" />
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="make-war" >
+		<delete dir="${war.dest}" />
+		<war destfile="${war.dest}" webxml="${basedir}/WebContent/WEB-INF/web.xml">
+			<fileset dir="${basedir}/WebContent">
+				<include name="**/**.*" />
+				<exclude name="**/*.jar" />
+				<exclude name="**/*.class" />
+			</fileset>
+			<lib dir="${basedir}/WebContent/WEB-INF/lib" />
+			<classes dir="${class.dir}" />
+		</war>
+	</target>
+</project>
+```
+
+8. 利用session来保存数据传值的话，如果需要使用重定向，会造成session丢失。可考虑采用cookie来传值
+
+```java
+Cookie cookie = new Cookie("myKey", "myValue");
+cookie.setMaxAge(60); // 60s
+response.addCookie(cookie);
+
+// 获取值
+Cookie[] cookies = request.getCookies();
+String key = cookies[0].getName();
+String value = cookies[1].getValue();
+```
+
+
+
