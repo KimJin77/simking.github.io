@@ -1,9 +1,16 @@
 ---
-layout: project
-title: 1
-excerpt: "程序猿的文艺面"
-comments: false
-likes:  true
+layout: post
+title:  "Moon Jekyll Theme"
+date:   2016-04-06
+excerpt: "Minimal, one column Jekyll theme for your blog."
+project: true
+tag:
+- jekyll 
+- moon
+- blog
+- about
+- theme
+comments: true
 ---
 
 <blockquote><p style="color:RGB(103, 74, 79);">你不用记得我的好，记着我就好。</p></blockquote>
