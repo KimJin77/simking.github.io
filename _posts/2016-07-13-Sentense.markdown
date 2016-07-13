@@ -11,7 +11,7 @@ comments: false
 
 <ul>
     	<li>
-    		
+    		<blockquote><p style="color:RGB(220, 184, 121);">四十岁时，我们在相逢。你问我，风花雪月算什么。我说，算成语吧。</p></blockquote>
     	</li>
     	<li>
     		<blockquote><p style="color:RGB(139, 101, 140);">与这个世界交手多年，你是否光彩依旧，兴致嫣然。</p></blockquote>
