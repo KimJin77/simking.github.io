@@ -3,12 +3,91 @@ layout: post
 title:  "句"
 date:   2016-04-06
 excerpt: "那些句子"
-likes: true
+project: true
 tag:
 - likes
 comments: false
 ---
 
-<blockquote><p style="color:RGB(220, 184, 121);">四十岁时，我们在相逢。你问我，风花雪月算什么。我说，算成语吧。</p></blockquote>
+<ul>
+    	<li>
+    		
+    	</li>
+    	<li>
+    		<blockquote><p style="color:RGB(139, 101, 140);">与这个世界交手多年，你是否光彩依旧，兴致嫣然。</p></blockquote>
+    	</li>
+    	<li>
+    		<blockquote><p style="color:RGB(247, 213, 80);">鸿蒙初辟本无性，打破顽空须悟空</p></blockquote>
+    	</li>
+    	<li>
+    		<blockquote><p style="color:RGB(103, 74, 79);">你不用记得我的好，记着我就好。</p></blockquote>
+    	</li>
+    	<li>
+    		<blockquote><p style="color:RGB(111, 86, 79);">酒还剩半杯你说好累，故人还未归往后别流泪。</p></blockquote>
+    	</li>
+    	<li>
+    		<blockquote><p style="color:RGB(202, 173, 95);">回忆不能抹去，只好慢慢堆积。岁月带你上牌桌，偏偏赌注是自己。</p></blockquote>
+    	</li>
+    	<li>
+    		<blockquote><p style="color:RGB(104, 88, 117);">只是一起走过一段路而已，何必把想念弄得比经过还长。</p></blockquote>
+    	</li>
+    	<li>
+    		<blockquote><p style="color:RGB(208, 16, 76);">你这么擅长安慰他人，一定度过了很多自己安慰自己的日子吧。</p></blockquote>
+    	</li>
+    	<li>
+    		<blockquote><p style="color:RGB(158, 174, 135);">世事如书，我偏爱你这一句。愿做个逗号，待在你脚边。但你有自己的朗读者，而我只是个摆渡人。</p></blockquote>
+    	</li>
+    	<li>
+    		<blockquote><p style="color:RGB(122, 86, 62);">我希望和你在一起，如果不可以。那我就在你看不见的地方，永远陪着你。</p></blockquote>
+    	</li>
+    	<li>
+    		<blockquote><p style="color:RGB(188, 53, 60);">愿你孤独不枉，愿你岁月无殇，愿你七情六欲与他来尝。</p></blockquote>
+    	</li>
+        <li>
+    		<blockquote><p style="color:RGB(155, 144, 194);">眼泪这东西啊，是流出来就能把心酸和悲伤都冲走的好东西。可等你们长大成人了就会明白，人生还有眼泪也冲不干净的巨大悲伤，还有难忘的痛苦让你们即使想哭也不能流泪，所以真正坚强的人，都是越想哭反而笑得越大声，怀揣着痛苦和悲伤，即使如此也要带上它们笑着前行。</p></blockquote>
+    	</li>
+         <li>
+    		<blockquote><p style="color:RGB(245, 150, 170);">立誓今生尊你为王，用我热血为你封疆。</p></blockquote>
+    	</li>
+         <li>
+    		<blockquote><p style="color:RGB(201, 220, 61);">黎明前是最黑暗的时候，但是千万别闭眼。在黑暗中移开视线的家伙是看不到明天的光明的，无论前方等待我们的夜有多深。</p></blockquote>
+    	</li>
+         <li>
+    		<blockquote><p style="color:RGB(163, 130, 187);">若开始就只是一个人，又何来孤独的痛苦。</p></blockquote>
+    	</li>
+        <li>
+    		<blockquote><p style="color:RGB(106, 104, 53);">有时候，我们明明已经原谅了那个人，却无法真正快乐起来，是因为，我们忘了原谅自己。</p></blockquote>
+    	</li>
+        <li>
+    		<blockquote><p style="color:RGB(111, 51, 129);">最后的这轮明月终于把你带来与我相见，但是好抱歉，等着等着，夜樱与我都已粉褪花残。没有变，星月沉落未曾改变你的音容笑貌，夜樱灼灼不曾枯萎凋零冲淡思念。</p></blockquote>
+    	</li>
+         <li>
+            <blockquote><p style="color:RGB(235, 127, 176);">未佩妥剑，出门便已是江湖。</p></blockquote>
+        </li>
+        <li>
+            <blockquote><p style="color:RGB(82, 150, 113);">最怕你一生碌碌无为，还安慰自己平凡可贵。</p></blockquote>
+        </li>
+        <li>
+            <blockquote><p style="color:RGB(145, 173, 112);">故事的最后，你转过身，我却丧失勇气。从此我重新弄丢了自己，刻意忘记我们曾经相遇。</p></blockquote>
+        </li>
+        <li>
+            <blockquote><p style="color:RGB(241, 182, 127);">婆娑大梦，日日黄粱。若真的喜欢，就别抗拒遗憾。</p></blockquote>
+        </li>
+        <li>
+            <blockquote><p style="color:RGB(254, 223, 225);">十年饮冰，难凉热血。</p></blockquote>
+        </li>
+        <li>
+            <blockquote><p style="color:RGB(187, 134, 94);">你配不上自己的野心，也辜负了所有的苦难。</p></blockquote>
+        </li>
+        <li>
+            <blockquote><p style="color:RGB(91, 98, 46);">生命中所有的灿烂，终究要用寂寞来偿还。</p></blockquote>
+        </li>
+        <li>
+            <blockquote><p style="color:RGB(102, 50, 124);">想得却不可得，你耐人生何？</p></blockquote>
+        </li>
+        <li>
+            <blockquote><p style="color:RGB(187, 45, 50);">心灰烬，有发未全僧。</p></blockquote>
+        </li>
+    </ul>
 
 
