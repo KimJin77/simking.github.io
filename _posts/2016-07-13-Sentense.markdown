@@ -4,6 +4,8 @@ title:  "句"
 date:   2016-04-06
 excerpt: "那些句子"
 likes: true
+tag:
+- likes
 comments: false
 ---
 
