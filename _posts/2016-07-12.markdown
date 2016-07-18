@@ -129,5 +129,14 @@ String key = cookies[0].getName();
 String value = cookies[1].getValue();
 ```
 
+9. Servlet 获取URL和参数
+
+```java
+request.getRequestURL();
+request.getQueryString();
+// http://www.xxx.com
+// code=001Jd26R177IIV02n64R17vY5R1Jd26N&state=
+```
+
 
 
