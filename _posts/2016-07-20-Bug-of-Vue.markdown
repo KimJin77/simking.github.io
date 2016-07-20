@@ -1,0 +1,30 @@
+---
+layout:     post
+title:      "Vue.js上的一个小问题"
+date:       2016-07-20
+author:     "Sim"
+
+catalog: false
+tags:
+    - Vue
+---
+
+心血来潮地试了一下Vue.js这个框架，谁知道一上手就有点找不着北的感觉。在手机端加载网页，当数据尚未加载成功的时候，页面会显示'{{ value }}'这样的东东。（当然不排除我的用法不对）。后来通过谷歌找到了解决的方法如下：
+
+如果当前页为首屏的话，在模板中如果使用{{}}就会出现奇怪的东西，比如
+	
+	```html
+	<p>hello, {{ name }}</p> <!--初始化之前，会直接显示hello, {{ name }}-->
+	<img src=<span class="string">"{{ imgSrc }}"</span> /><!--这个初始化之前会报错-->
+	```
+	
+	可以修改语法糖，避免出现上述情况:
+	
+	```html
+	<p v-text=<span class="String">"'hello, '+name"</span>>hello</p>
+	<img v-attr=<span class="string">"src: imgSrc"</span> />
+	```
+
+另外，使用img标签的时候需要注意，如果直接使用`<img src={{ imgSrc }} />'这样的代码的话，是会报错的。根据需求，若是要更改src的话，可以参照上面的代码段。若是要绑定src的话，就是用'<img :src="xxx"/>'即可。
+
+

@@ -44,7 +44,5 @@ $("#start_date").datepicker({
 });
 
 $("#start_date").datepicker("setDate", new Date());
-
-
 ```
 

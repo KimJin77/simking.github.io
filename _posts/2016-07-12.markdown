@@ -138,5 +138,9 @@ request.getQueryString();
 // code=001Jd26R177IIV02n64R17vY5R1Jd26N&state=
 ```
 
+---
+今天我大神同事来一句。。。jsp已经没人用了。。。落伍太多。。。我咧个去啊，还想着将那堆Servlet拼接出来的网页换成jsp。看来又得换换别的了
+---
+
 
 
