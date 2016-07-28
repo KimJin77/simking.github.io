@@ -44,6 +44,32 @@ e.g
 
 absolute是相对上一个**不为static的父元素**进行绝对定位。fixed则是相对于浏览器窗口进行定位。
 
+假设如下代码
+
+```html
+<body>
+	<div class="container">
+		<p class="pos">绝对定位</p>
+	</div>
+</body>
+```
+
+```css
+.pos {
+	display: absolute;
+	top: 5rem;
+}
+```
+
+上面这段代码中，由于'div'是默认的static，所以p是相对body元素进行绝对定位。如果想要相对div进行定位的话，则需要将div设置为relative
+
+```css
+.container {
+	display: absolute;
+}
+```
+
+
 3. 实际项目中，标签选择器一般用于定义全局样式
 
 4. 使用个性化字体的话，使用`@font-face`，它可以加载服务器端的字体文件。基本语法如下
@@ -144,3 +170,5 @@ e.g
   * outerWidth()和outerHeight(): 返回元素的宽高（包括内边距和边框）
 
 16. css的绝对定位是“相对于”最近的已定位的祖先元素，而相对定位是“相对于”元素在文档中初始位置。
+
+

@@ -13,6 +13,40 @@ tags:
 
 # CSS
 
+
+Update in 2016-07-20
+
+## 书写顺序
+
+```css
+.declaration-order {
+    display: block;
+    float: right;
+
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+
+    border: 1px solid #e5e5e5;
+    border-radius: 3px;
+    width: 100px;
+    height: 100px;
+
+    font: normal 13px "Helvetica Neue", sans-serif;
+    line-height: 1.5;
+    text-align: center;
+
+    color: #333;
+    background-color: #f5f5f5;
+
+    opacity: 1;
+}
+```
+
+---
 ## 文件名称
 
 * 不要将项目的名称用在你的文件名上
