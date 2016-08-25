@@ -3,12 +3,13 @@ layout:     post
 title:      "JavaScript笔记"
 date:       2016-05-22
 author:     "Sim"
-catalog: false
+catalog: true
 tags:
     - JavaScript
 ---
 
-1. JS中变量有按值和按引用两种访问方式，其中基本类型都是按值访问。但是对于方法的参数来说，只有按值传递这种方式。
+## 变量访问
+ JS中变量有按值和按引用两种访问方式，其中基本类型都是按值访问。但是对于方法的参数来说，只有按值传递这种方式。
 
 ```javascript
 //按值传递
@@ -26,13 +27,17 @@ alert(obj2.name);
 // 此时会输出Tim，因为Object是按引用进行访问的。
 ```
 
-2. 使用`typeof`操作符可以检测某个对象是否为基本数据类型。但是如果想要检测引用类型的值时，这个操作符的作用就没那么大了。通常我们使用`instanceof`操作符来检测某个值是哪种类型的对象。
+## typeof 和 instanceof
+
+使用`typeof`操作符可以检测某个对象是否为基本数据类型。但是如果想要检测引用类型的值时，这个操作符的作用就没那么大了。通常我们使用`instanceof`操作符来检测某个值是哪种类型的对象。
 
 ```javascript
 result = variable instanceof constructor
 ```
 
-3. 创建Object实例的两种方法
+## 创建Object
+
+创建Object实例的两种方法
 
   1）new操作符+Object构造函数
 
@@ -51,128 +56,9 @@ result = variable instanceof constructor
   };
   ```
 
-4. JavaScript的数组中的length属性不是只读的！所以可以通过调整length的值来进行增删
+几种模式：
 
-```javascript
-// 移除“blue”
-var colors = ["red", "orange", "blue"];
-colors.length = 2;
-```
-
-5. 函数中的`arguments`有一个`callee`属性，该属性是一个指针，指向拥有这个arguments对象的函数
-
-```javascript
-function factorial(num) {
-  if (num < 1) return 1;
-  else return num * arguments.callee(num-1);
-}
-```
-
-6. ECMAScript中有两个属性：数据属性和访问器属性
-
-  1) 数据属性：
-
-    * [[Configurable]]: 表示能否通过delete删除属性从而定义属性，能否修改属性的特性，或者能够把属性修改为访问器属性。默认值为true
-
-    * [[Enumerable]]: 表示能否通过for-in循环返回属性。默认值为true
-
-    * [[Writable]]: 表示能否修改属性的值。默认值为true
-
-    * [[Value]]: 包含这个属性的数据值。读取属性值时，从这个位置读；写入属性值时，把新值保存到这个位置。默认是undefined
-
-
-  要修改属性默认的特性，必须使用`Object.defineProperty()`方法。这个方法接收三个参数：属性所在的对象，属性的名字和一个描述符对象。
-
-  ```javascript
-  var person = {};
-  Object.defineProperty(person, "name") {
-    writable: false,
-    value: "Nicholas"
-  }
-
-  alert(person.name); // "Nicholas"
-  person.name = "Greg";
-  alert(person.name); // "Nicholas"
-  ```
-
-  可以多次调用`Object.defineProperty()`方法修改同一个属性，但在把configurable设置为false之后就会有限制。并且在调用时，如果没指定的话，默认值都是false。
-
-  2）访问器属性
-
-  * [[Configurable]]: 表示能否通过delete删除属性从而定义属性，能否修改属性的特性，或者能够把属性修改为访问器属性。默认值为true
-
-  * [[Enumerable]]: 表示能否通过for-in循环返回属性。默认值为true
-
-  * [[Get]]: 在读取属性时调用的函数，默认值是false
-
-  * [[Set]]: 在写入属性时调用的函数，默认值是false
-
-  访问器属性不能直接定义，必须使用`Object.defineProperty()`
-
-  ```javascript
-  var book = {
-    _year: 2016,
-    edition: 1
-  };
-
-  Object.defineProperty(book, "year", {
-    get: function() {
-      return this._year;
-    }
-
-    set: function(newValue) {
-      if (newValue > 2015) {
-        this._year = newValue;
-        this.edition += newValue - 2015;
-      }
-    }
-  });
-
-  book.year = 2016;
-  alert(book.edition); // 2
-  ```
-
-7. 使用`Object.getOwnPropertyDescriptor()`方法获取给定属性的描述符。该方法接收属性所在的对象和属性名称两个参数。如果是访问器属性的话，是configurable, enumerable, get和set。如果是数据属性的话，则是configurable, enumerable, writable和Value
-
-```javascript
-var book = {};
-Object.definePropertries(book, {
-  _year: {
-    value: 2016
-  },
-
-  edition: {
-    value: 1
-  },
-
-  year: {
-    get: function() {
-      return this._year;
-    },
-
-    set: function(newValue) {
-      if (newValue > 2015) {
-        this._year = newValue;
-        this.edition += newValue - 2015;
-      }
-    }
-  }
-});
-
-var descriptor = Object.getOwnPropertyDescriptor(book, "_year");
-alert(descriptor.value); // 2016
-alert(descriptor.configurable); // false;
-alert(typeof descriptor.get); // "undefined"
-
-var descriptor = Object.getOwnPropertyDescriptor(book, "year");
-alert(descriptor.value); // undefined
-alert(descriptor.configurable); // false;
-alert(typeof descriptor.get); // "function"
-```
-
-8. 创建对象
-
-  1) 工厂模式
+1) 工厂模式
 
   ```javascript
   function createPerson(name, age, job) {
@@ -331,27 +217,136 @@ alert(typeof descriptor.get); // "function"
   }
   ```
 
-9. 给原型添加方法的代码一定要放在替换原型的语句之后。另外，如果是利用原型链实现继承时，不能使用对象字面量创建原型方法。因为这样做的话，就会重写原型链。
+## 数组的length
 
-10. 寄生组合继承
+JavaScript的数组中的length属性不是只读的！所以可以通过调整length的值来进行增删
 
 ```javascript
-function inheritPrototype(subType, superType) {
-  var prototype = object(superType.prototype); // 创建对象
-  prototype.constructor = subType;  // 增强对象
-  subType.prototype = prototype; // 指定对象
+// 移除“blue”
+var colors = ["red", "orange", "blue"];
+colors.length = 2;
+```
+
+## callee
+
+函数中的`arguments`有一个`callee`属性，该属性是一个指针，指向拥有这个arguments对象的函数
+
+```javascript
+function factorial(num) {
+  if (num < 1) return 1;
+  else return num * arguments.callee(num-1);
 }
 ```
 
-11. 块级作用域(私有作用域)
+## 数据属性和访问器属性
+
+ECMAScript中有两个属性：数据属性和访问器属性
+
+  1) 数据属性：
+
+    * [[Configurable]]: 表示能否通过delete删除属性从而定义属性，能否修改属性的特性，或者能够把属性修改为访问器属性。默认值为true
+
+    * [[Enumerable]]: 表示能否通过for-in循环返回属性。默认值为true
+
+    * [[Writable]]: 表示能否修改属性的值。默认值为true
+
+    * [[Value]]: 包含这个属性的数据值。读取属性值时，从这个位置读；写入属性值时，把新值保存到这个位置。默认是undefined
+
+
+  要修改属性默认的特性，必须使用`Object.defineProperty()`方法。这个方法接收三个参数：属性所在的对象，属性的名字和一个描述符对象。
+
+  ```javascript
+  var person = {};
+  Object.defineProperty(person, "name") {
+    writable: false,
+    value: "Nicholas"
+  }
+
+  alert(person.name); // "Nicholas"
+  person.name = "Greg";
+  alert(person.name); // "Nicholas"
+  ```
+
+  可以多次调用`Object.defineProperty()`方法修改同一个属性，但在把configurable设置为false之后就会有限制。并且在调用时，如果没指定的话，默认值都是false。
+
+  2）访问器属性
+
+  * [[Configurable]]: 表示能否通过delete删除属性从而定义属性，能否修改属性的特性，或者能够把属性修改为访问器属性。默认值为true
+
+  * [[Enumerable]]: 表示能否通过for-in循环返回属性。默认值为true
+
+  * [[Get]]: 在读取属性时调用的函数，默认值是false
+
+  * [[Set]]: 在写入属性时调用的函数，默认值是false
+
+  访问器属性不能直接定义，必须使用`Object.defineProperty()`
+
+  ```javascript
+  var book = {
+    _year: 2016,
+    edition: 1
+  };
+
+  Object.defineProperty(book, "year", {
+    get: function() {
+      return this._year;
+    }
+
+    set: function(newValue) {
+      if (newValue > 2015) {
+        this._year = newValue;
+        this.edition += newValue - 2015;
+      }
+    }
+  });
+
+  book.year = 2016;
+  alert(book.edition); // 2
+  ```
+
+## Object.getOwnPropertyDescriptor()
+
+使用`Object.getOwnPropertyDescriptor()`方法获取给定属性的描述符。该方法接收属性所在的对象和属性名称两个参数。如果是访问器属性的话，是configurable, enumerable, get和set。如果是数据属性的话，则是configurable, enumerable, writable和Value
 
 ```javascript
-(function() {
+var book = {};
+Object.definePropertries(book, {
+  _year: {
+    value: 2016
+  },
 
-})();
+  edition: {
+    value: 1
+  },
+
+  year: {
+    get: function() {
+      return this._year;
+    },
+
+    set: function(newValue) {
+      if (newValue > 2015) {
+        this._year = newValue;
+        this.edition += newValue - 2015;
+      }
+    }
+  }
+});
+
+var descriptor = Object.getOwnPropertyDescriptor(book, "_year");
+alert(descriptor.value); // 2016
+alert(descriptor.configurable); // false;
+alert(typeof descriptor.get); // "undefined"
+
+var descriptor = Object.getOwnPropertyDescriptor(book, "year");
+alert(descriptor.value); // undefined
+alert(descriptor.configurable); // false;
+alert(typeof descriptor.get); // "function"
 ```
 
-12. 全局变量不能通过`delete`删除，而直接在window对象上定义的属性可以
+## delete 变量
+
+全局变量不能通过`delete`删除，而直接在window对象上定义的属性可以
 
 ```javascript
 var age = 29;
@@ -361,14 +356,14 @@ delete window.age; // return false
 delete window.color; // return true
 ```
 
-13. 获取窗口左边和上边的位置
+## 获取窗口左边和上边的位置
 
 ```javascript
 var leftPos = (typeof window.screenLeft == "number") ? window.screenLeft : window.screenX;
 var topPos = (typeof window.screenTop == "number") ? window.screenTop : window.screenY;
 ```
 
-14. location对象的属性
+## location对象的属性
 
 |属性|例子|说明|
 |:---:|:---:|:---:|
@@ -381,7 +376,7 @@ var topPos = (typeof window.screenTop == "number") ? window.screenTop : window.s
 |protocol|"http:"|返回页面使用协议|
 |search|"?q=javascript"|返回URL中的查询字符串|
 
-15. 解析查询字符串
+## 解析查询字符串
 
 ```javascript
 function getQueryStringArgs() {
@@ -403,10 +398,11 @@ function getQueryStringArgs() {
   return args;
 }
 ```
+## cloneNode
 
-16. `cloneNode()`表示是否对节点进行复制。传入参数为true时为深复制，即复制节点及其整个子文档树。反之则为浅复制，只复制节点本身。
+`cloneNode()`表示是否对节点进行复制。传入参数为true时为深复制，即复制节点及其整个子文档树。反之则为浅复制，只复制节点本身。
 
-17. 取得HTML元素
+## 取得HTML元素
 
 比方说:
 
@@ -425,7 +421,7 @@ alert(div.dir); // dir
 
 同时也可以为这些属性赋予新值。
 
-18. 修改特性：`getAttribute()`, `setAttribute()`和`removeAttribute()`
+## 修改特性：`getAttribute()`, `setAttribute()`和`removeAttribute()`
 
 ```javascript
 var div = document.getElementById("myDiv");
@@ -436,19 +432,21 @@ alert(div.getAttribute("lang")); // en
 alert(div.getAttribute("dir")); // dir
 ```
 
-19. 在HTML5中，自定义的属性需要加上data-前缀
+## arguments to Array
 
-20. `arguments`转数组`Array.prototype.slice.call(arguments);`
+ `arguments`转数组`Array.prototype.slice.call(arguments);`
 
-21. 对于文本节点来说，可以通过nodeValue或者data属性来访问Text节点中包含的文本。（空格也可以当做是一个文本节点）。使用`createTextNode()`创建文本节点，`nomalize()`用于合并某个父元素中的多个文本节点，`splitText()`用于分割
+## 文本节点
 
-22. Comment类型表示的是注释，其nodeValue是注释的内容。（Comment类型很少使用）
+ 对于文本节点来说，可以通过nodeValue或者data属性来访问Text节点中包含的文本。（空格也可以当做是一个文本节点）。使用`createTextNode()`创建文本节点，`nomalize()`用于合并某个父元素中的多个文本节点，`splitText()`用于分割
 
-23. `querySelector()`接收一个CSS选择符，返回与该模式匹配的第一个元素。`querySelectorAll()`返回的是一个NodeList实例
+## querySelector 与 querySelectorAll
 
-24. 元素间的空格，通常浏览器都会返回文本节点
+ `querySelector()`接收一个CSS选择符，返回与该模式匹配的第一个元素。`querySelectorAll()`返回的是一个NodeList实例
+ 
+## 元素间的空格，通常浏览器都会返回文本节点
 
-25. 元素遍历可以使用：
+## 元素遍历可以使用：
 
   1) `childElementCount` -- 返回子元素（不包括文本节点和注释）
   2） `firstElementChild` -- 指向第一个元素
@@ -456,16 +454,16 @@ alert(div.getAttribute("dir")); // dir
   4） `previousElementSibling` -- 指向前一个同辈元素
   5) `nextElementSibling` -- 指向后一个同辈元素
 
-26. HTML5为所有元素添加了classList属性，方便操作类名：
+## HTML5为所有元素添加了classList属性，方便操作类名：
 
   1）`add(value)` -- 将给定的字符串添加到列表，如果值已经存在，就不添加.
   2）`contains(value)` -- 表示列表中是否存在给定的值
   3）`remove(value)` -- 从列表中删除给定的字符串
   4）`toggle(value)` -- 如果列表中已经存在给定的值，则删除；如果没有，就添加
 
-27. DOM中获得焦点的元素: `document.activeElement`
 
-28. HTML5允许添加非标准的属性，只要是以“data-”开头的即可
+## data-*
+HTML5允许添加非标准的属性，只要是以“data-”开头的即可
 
   ```html
   <div id="myDiv" data-appId="12345" data-myName="Nicholas"></div>
@@ -478,11 +476,7 @@ alert(div.getAttribute("dir")); // dir
   var myName = div.dataset.myName;
   ```
 
-29. 删除事件处理程序的话，只需要将事件赋值为null即可。
-
-30. DOM2级中的`addEventListener()`和`removeEventListener()`接收三个参数：要处理的事件名，作为事件处理的函数和一个布尔值。布尔值为true，表示在捕获阶段调用事件处理程序。为false的话表示在冒泡阶段调用。
-
-31. 跨浏览器的事件处理程序
+## 跨浏览器的事件处理程序
 
 ```javascript
 // 先判断DOM2级方法，再判断IE方法，最后是DOM0级方法
@@ -502,7 +496,8 @@ var EventUtil = {
 }
 ```
 
-32. 阻止特定事件的默认行为，可以使用`preventDefault()`方法。也可以设置returnValue的值
+## preventDefault() 
+阻止特定事件的默认行为，可以使用`preventDefault()`方法。也可以设置returnValue的值
 
 ```javascript
 var link = document.getElementById("myLink");
@@ -510,3 +505,24 @@ link.onclick = function() {
   window.event.returnValue = false;
 };
 ```
+
+## call() 和 apply()
+
+原贴:[方法](www.liaoxuefeng.com/wiki/001434446689867b27157e896e74d51a89c25cc8b43bdb3000/0014345005399057070809cfaa347dfb7207900cfd116fb000)
+
+* `apply()` 把参数打包成`Array`再传入
+* `call()` 把参数按顺序传入
+
+```js
+Math.max.apply(null, [3, 5, 4]); // 5
+Math.max.call(null, 3, 5, 4); // 5
+```
+
+## sort()	
+
+`Array`的`sort()`默认把所有元素转为String再排序，所以会出现以下这种情况
+
+```js
+[10, 20, 3, 2].sort(); // [10, 2, 20, 3]
+```
+

@@ -1,0 +1,27 @@
+---
+layout:     post
+title:      "Java的几个小要点"
+date:       2016-08-03
+author:     "Sim"
+catalog: false
+tags:
+    - Java
+---
+
+今天同事在检查代码的时候，说了几个提高性能的要点。于是就记录下来。对我这种数据结构的白痴来说，每个要点都是值得学习下来的啊~~~
+
+1. 在Tomcat服务器中，使用`out.prinln()`输出代码时，如果调用得过于频繁，可能会使得性能有所下降。但是，当数据量比较大，又或者是服务器带宽较低时，使用`out.println()`来进行输出却可以有效地进行执行异步输出。所以在进行输出时需要多加考虑。
+2. `System.out.println()`会占用资源，尽量减少不必要的调用。
+3. 对于字符串来说，使用`+`号来进行连接的话，效率不高，尽可能使用`StringBuilder`，使用`append()`方法进行连接。
+4. JSONArray转Map
+
+```Java
+JSONArray arr = obj.getJSONArray("key"); // arr是含有JSONObject的JSONArray对象
+Map<String, Object> map = new HashMap<String, Object>();
+for (int i = 0, s = arr.size(); i < s; i++) {
+	JSONObject o = arr.getJSONObject(i);
+	String key = o.getString("your_key");
+	map.put(key, o);
+}
+```
+

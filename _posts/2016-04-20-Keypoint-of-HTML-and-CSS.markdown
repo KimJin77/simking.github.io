@@ -9,6 +9,27 @@ tags:
     - CSS
 ---
 
+## Update in 2016-08-04
+1. p标签限定行数
+
+```css
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+```
+
+2. 去除button的默认样式
+
+```css
+button {
+	-webkit-appearance: none;
+}
+```
+
+---
+
 ## Update in 2016-05-10
 
 1. 在表单中，如果在表单提交时不允许某个数据为空，则可以在`input`标签中添加`required`字段，表明该值不能为空
